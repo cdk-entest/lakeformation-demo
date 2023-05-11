@@ -8,7 +8,7 @@ date: 2022-10-05
 
 ## Introduction
 
-[GitHub] this notes show how IAM and LakeFormation togeter control access to data lake.
+[GitHub](https://github.com/cdk-entest/lakeformation-demo) this notes show how IAM and LakeFormation togeter control access to data lake.
 
 - Register an admin to LakeFormation
 - Register S3 buckets to LakeFormation
