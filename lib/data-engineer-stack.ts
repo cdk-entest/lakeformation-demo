@@ -115,9 +115,8 @@ export class LFWorkFlowRoleStack extends Stack {
           resources: [
             props.sourceBucketArn,
             `${props.sourceBucketArn}/*`,
-            // test lakeformation data location grant
-            // props.destBucketArn,
-            // `${props.destBucketArn}/*`,
+            props.destBucketArn,
+            `${props.destBucketArn}/*`,
           ],
         }),
         new aws_iam.PolicyStatement({

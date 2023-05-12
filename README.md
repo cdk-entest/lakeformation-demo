@@ -14,7 +14,7 @@ date: 2022-10-05
 - Register S3 buckets to LakeFormation
 - Grant (fine and graint) permissions to a Data Scientist
 - Grant (fine and coarse) permissions to a Glue Role
-- Check IAMOnly in databases in Lake Formation
+- Revoke [IAMAllowedPrincipals](https://docs.aws.amazon.com/lake-formation/latest/dg/change-settings.html)
 
 ## LakeFormation
 
