@@ -119,10 +119,9 @@ export class LFWorkFlowRoleStack extends Stack {
         }),
         // access s3
         new aws_iam.PolicyStatement({
-          actions: ["s3:*"],
+          actions: ["s3:GetObject"],
           effect: Effect.ALLOW,
           resources: [
-            props.sourceBucketArn,
             `${props.sourceBucketArn}/*`,
             // props.destBucketArn,
             // `${props.destBucketArn}/*`,
