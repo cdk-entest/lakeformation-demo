@@ -62,6 +62,15 @@ export class DataEngineerStack extends Stack {
             `arn:aws:glue:${this.region}:*:catalog`,
           ],
         }),
+        // lakeformation
+        new aws_iam.PolicyStatement({
+          actions: [
+            "lakeforamtion:GetDataAccess",
+            "lakeforamtion:GrantPermissions",
+          ],
+          resources: ["*"],
+          effect: Effect.ALLOW,
+        }),
       ],
     });
     policy.attachToRole(role);
@@ -115,8 +124,8 @@ export class LFWorkFlowRoleStack extends Stack {
           resources: [
             props.sourceBucketArn,
             `${props.sourceBucketArn}/*`,
-            props.destBucketArn,
-            `${props.destBucketArn}/*`,
+            // props.destBucketArn,
+            // `${props.destBucketArn}/*`,
           ],
         }),
         new aws_iam.PolicyStatement({
