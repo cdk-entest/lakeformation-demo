@@ -15,6 +15,7 @@ date: 2022-10-05
 - Grant (fine and graint) permissions to a Data Scientist
 - Grant (fine and coarse) permissions to a Glue Role
 - Revoke [IAMAllowedPrincipals](https://docs.aws.amazon.com/lake-formation/latest/dg/change-settings.html)
+- Use correct method write_dynamic_frame.from_catalog
 
 ## LakeFormation
 
@@ -61,7 +62,7 @@ props.registerBuckets.map((bucket) => {
 });
 ```
 
-## Grant Permissions to a Data Scientist
+## Grant Permissions 
 
 - Create an IAM user with password stored in Secret
 - Coarse permissions by IAM
@@ -175,7 +176,7 @@ new aws_lakeformation.CfnPrincipalPermissions(
 );
 ```
 
-## Create Glue Role
+## ETL WorkFlow Role 
 
 - Coarse permissions with IAM
 - Fine permissions with LakeFormation
@@ -214,11 +215,11 @@ const policy = new aws_iam.Policy(this, "PolicyForLakeFormationWorkFlow", {
       effect: Effect.ALLOW,
       resources: ["*"],
     }),
-    // access s3
+    // read data from s3 source 
     new aws_iam.PolicyStatement({
-      actions: ["s3:*"],
+      actions: ["s3:GetObject"],
       effect: Effect.ALLOW,
-      resources: [`${props.sourceBucketArn}/*`, `${props.destBucketArn}/*`],
+      resources: [`${props.sourceBucketArn}/*`],
     }),
     new aws_iam.PolicyStatement({
       actions: [
@@ -233,7 +234,9 @@ const policy = new aws_iam.Policy(this, "PolicyForLakeFormationWorkFlow", {
 policy.attachToRole(role);
 ```
 
-Fine permission with LakeFormation so that the Glue role can create catalog tables in a database
+Fine permission with LakeFormation so that the Glue role can:
+- Create catalog tables in a database
+- Write data to the table's underlying data location in S3 
 
 ```ts
 const grant = new aws_lakeformation.CfnPrincipalPermissions(
@@ -253,6 +256,63 @@ const grant = new aws_lakeformation.CfnPrincipalPermissions(
     },
   }
 );
+```
+
+## Glue Job Script 
+
+Please use correct method to write dataframe to the table's udnerlying data location in S3. 
+
+- correct: write_dynamic_frame.from_catalog 
+- incorrect: write_dynamic_frame.from_options 
+
+Quoted from [docs](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-api-crawler-pyspark-extensions-dynamic-frame-writer.html) *Writes a DynamicFrame using the specified catalog database and table name.*
+
+```py 
+glueContext.write_dynamic_frame.from_catalog(
+    frame=S3bucket_node1, 
+    database= "default",
+    table_name="amazon_reviews_parquet_table",
+    transformation_ctx="S3bucket_node3",
+)
+```
+
+The incorrect one 
+
+```py 
+S3bucket_node5 = glueContext.getSink(
+    path="s3://{0}/amazon-review-tsv-parquet/".format(data_lake_bucket),
+    connection_type="s3",
+    updateBehavior="UPDATE_IN_DATABASE",
+    partitionKeys=[],
+    # compression="snappy",
+    enableUpdateCatalog=True,
+    transformation_ctx="write_sink",
+)
+S3bucket_node5.setCatalogInfo(
+    catalogDatabase="default", 
+    catalogTableName="amazon_review_tsv_parquet"
+)
+S3bucket_node5.setFormat("glueparquet")
+S3bucket_node5.writeFrame(S3bucket_node1)
+```
+
+Another incorrect one 
+
+```py 
+S3bucket_node3 = glueContext.write_dynamic_frame.from_options(
+    frame=S3bucket_node1,
+    connection_type="s3",
+    format="glueparquet",
+    connection_options={
+        "path": "s3://{0}/parquet/".format(data_lake_bucket),
+        "partitionKeys": ["product_category"],
+        "enableUpdateCatalog": True,
+         "database":"default",
+         "table":"amazon_reviews_parquet_table",
+    },
+    format_options={"compression": "uncompressed"},
+    transformation_ctx="S3bucket_node3",
+)
 ```
 
 ## Troubeshooting
@@ -276,3 +336,5 @@ const grant = new aws_lakeformation.CfnPrincipalPermissions(
 - [Lake Formation with Glue Role](https://docs.aws.amazon.com/lake-formation/latest/dg/initial-LF-setup.html)
 
 - [Glue Role Name Convention PassRole](https://docs.aws.amazon.com/glue/latest/dg/create-an-iam-role.html)
+
+- [write_dynamic_frame](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-api-crawler-pyspark-extensions-dynamic-frame-writer.html#aws-glue-api-crawler-pyspark-extensions-dynamic-frame-writer-from_catalog)
