@@ -345,3 +345,5 @@ S3bucket_node3 = glueContext.write_dynamic_frame.from_options(
 - [Glue with CSV](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-etl-format-csv-home.html)
 
 - [Spark DataFrame and Glue DataFrame](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-python-samples-medicaid.html)
+
+[HIVE_CURSOR_ERROR](https://repost.aws/knowledge-center/athena-hive-cursor-error)
