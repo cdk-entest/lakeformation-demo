@@ -62,7 +62,7 @@ props.registerBuckets.map((bucket) => {
 });
 ```
 
-## Grant Permissions 
+## Grant Permissions
 
 - Create an IAM user with password stored in Secret
 - Coarse permissions by IAM
@@ -176,7 +176,7 @@ new aws_lakeformation.CfnPrincipalPermissions(
 );
 ```
 
-## ETL WorkFlow Role 
+## ETL WorkFlow Role
 
 - Coarse permissions with IAM
 - Fine permissions with LakeFormation
@@ -215,7 +215,7 @@ const policy = new aws_iam.Policy(this, "PolicyForLakeFormationWorkFlow", {
       effect: Effect.ALLOW,
       resources: ["*"],
     }),
-    // read data from s3 source 
+    // read data from s3 source
     new aws_iam.PolicyStatement({
       actions: ["s3:GetObject"],
       effect: Effect.ALLOW,
@@ -235,8 +235,9 @@ policy.attachToRole(role);
 ```
 
 Fine permission with LakeFormation so that the Glue role can:
+
 - Create catalog tables in a database
-- Write data to the table's underlying data location in S3 
+- Write data to the table's underlying data location in S3
 
 ```ts
 const grant = new aws_lakeformation.CfnPrincipalPermissions(
@@ -258,27 +259,27 @@ const grant = new aws_lakeformation.CfnPrincipalPermissions(
 );
 ```
 
-## Glue Job Script 
+## Glue Job Script
 
-Please use correct method to write dataframe to the table's udnerlying data location in S3. 
+Please use correct method to write dataframe to the table's udnerlying data location in S3.
 
-- correct: write_dynamic_frame.from_catalog 
-- incorrect: write_dynamic_frame.from_options 
+- correct: write_dynamic_frame.from_catalog
+- incorrect: write_dynamic_frame.from_options
 
-Quoted from [docs](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-api-crawler-pyspark-extensions-dynamic-frame-writer.html) *Writes a DynamicFrame using the specified catalog database and table name.*
+Quoted from [docs](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-api-crawler-pyspark-extensions-dynamic-frame-writer.html) _Writes a DynamicFrame using the specified catalog database and table name._
 
-```py 
+```py
 glueContext.write_dynamic_frame.from_catalog(
-    frame=S3bucket_node1, 
+    frame=S3bucket_node1,
     database= "default",
     table_name="amazon_reviews_parquet_table",
     transformation_ctx="S3bucket_node3",
 )
 ```
 
-The incorrect one 
+The incorrect one
 
-```py 
+```py
 S3bucket_node5 = glueContext.getSink(
     path="s3://{0}/amazon-review-tsv-parquet/".format(data_lake_bucket),
     connection_type="s3",
@@ -289,16 +290,16 @@ S3bucket_node5 = glueContext.getSink(
     transformation_ctx="write_sink",
 )
 S3bucket_node5.setCatalogInfo(
-    catalogDatabase="default", 
+    catalogDatabase="default",
     catalogTableName="amazon_review_tsv_parquet"
 )
 S3bucket_node5.setFormat("glueparquet")
 S3bucket_node5.writeFrame(S3bucket_node1)
 ```
 
-Another incorrect one 
+Another incorrect one
 
-```py 
+```py
 S3bucket_node3 = glueContext.write_dynamic_frame.from_options(
     frame=S3bucket_node1,
     connection_type="s3",
@@ -338,3 +339,9 @@ S3bucket_node3 = glueContext.write_dynamic_frame.from_options(
 - [Glue Role Name Convention PassRole](https://docs.aws.amazon.com/glue/latest/dg/create-an-iam-role.html)
 
 - [write_dynamic_frame](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-api-crawler-pyspark-extensions-dynamic-frame-writer.html#aws-glue-api-crawler-pyspark-extensions-dynamic-frame-writer-from_catalog)
+
+- [boto3 glue create table](https://boto3.amazonaws.com/v1/documentation/api/1.20.43/reference/services/glue.html#Glue.Client.create_table)
+
+- [Glue with CSV](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-etl-format-csv-home.html)
+
+- [Spark DataFrame and Glue DataFrame](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-python-samples-medicaid.html)
