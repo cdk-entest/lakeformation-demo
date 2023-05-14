@@ -391,4 +391,4 @@ glueContext.write_dynamic_frame.from_catalog(
 
 - [Spark DataFrame and Glue DataFrame](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-programming-python-samples-medicaid.html)
 
-[HIVE_CURSOR_ERROR](https://repost.aws/knowledge-center/athena-hive-cursor-error)
+- [HIVE_CURSOR_ERROR](https://repost.aws/knowledge-center/athena-hive-cursor-error)
