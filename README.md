@@ -318,11 +318,56 @@ S3bucket_node3 = glueContext.write_dynamic_frame.from_options(
 
 ## Troubeshooting
 
-- When creating a database in Lake Formation catalog, it is possible to specify location (S3 path of the database). Choose an Amazon S3 path for this database, which eliminates the need to grant data location permissions on catalog table paths that are this location’s children.
+When creating a database in Lake Formation catalog, it is possible to specify location (S3 path of the database). Choose an Amazon S3 path for this database, which eliminates the need to grant data location permissions on catalog table paths that are this location’s children.
 
 - Follow the convention name for GlueServiceRoleDefault
 
 - Double check the Lake Formation Permission and Data Location when deploying and updating with CDK
+
+- Spark DataFrame enforce data type and schema
+
+```py
+from pyspark.sql.types import StructType, StringType, IntegerType
+
+schema = StructType() \
+      .add("marketplace",StringType(),True) \
+      .add("customer_id",StringType(),True) \
+      .add("review_id",StringType(),True) \
+      .add("product_id",StringType(),True) \
+      .add("product_parent",StringType(),True) \
+      .add("product_title",StringType(),True) \
+      .add("product_category",StringType(),True) \
+      .add("star_rating",StringType(),True) \
+      .add("helpful_vote",StringType(),True) \
+      .add("total_vote",StringType(),True) \
+      .add("vine",StringType(),True) \
+      .add("verified_purchase",StringType(),True) \
+      .add("review_headline",StringType(),True) \
+      .add("review_body",StringType(),True) \
+      .add("myyear",StringType(),True)
+
+df = spark_session.read.format("csv")\
+.option("header", False)\
+.option("delimiter", "\t")\
+.option("quote", '"')\
+.schema(schema)\
+.load("s3://amazon-reviews-pds/tsv/amazon_reviews_us_Sports_v1_00.tsv.gz")
+
+df.selectExpr("cast(star_rating as int) star_rating")
+```
+
+- Convert Spark DataFrame to Glue DataFrame
+
+```py
+from awsglue.dynamicframe import DynamicFrame
+glue_df = DynamicFrame.fromDF(df, glueContext, "GlueDF")
+glueContext.write_dynamic_frame.from_catalog(
+    frame=glue_df,
+    database= "default",
+    table_name=table_name,
+    transformation_ctx="S3bucket_node3",
+)
+```
 
 ## Reference
 
