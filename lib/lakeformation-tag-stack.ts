@@ -1,13 +1,18 @@
 import { Stack, StackProps, aws_lakeformation } from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { TablePermission } from "./permission-type";
 
-const databaseName = "default"
+
+interface LakeFormationTagProps extends StackProps {
+    databaseName?: string
+    tableName?: string
+    columnNames?: string[]
+    principalArn: string
+}
 
 export class LakeFormationTagStack extends Stack {
 
-    constructor(scope: Construct, id: string, props: StackProps) {
-        super(scope, id, props)
+    constructor(scope: Construct, id: string, { databaseName = "default", tableName = "amazon_review_table", columnNames = ["marketplace", "customer_id"], principalArn }: LakeFormationTagProps) {
+        super(scope, id)
 
         // create environment tag 
         const envTag = new aws_lakeformation.CfnTag(
@@ -44,7 +49,7 @@ export class LakeFormationTagStack extends Stack {
                         catalogId: this.account,
                         columnNames: ["product_id", "product_title"],
                         databaseName: databaseName,
-                        name: "amazon_review_table"
+                        name: tableName
                     }
                 },
             }
@@ -64,7 +69,7 @@ export class LakeFormationTagStack extends Stack {
                     table: {
                         catalogId: this.account,
                         databaseName: databaseName,
-                        name: "amazon_review_table",
+                        name: tableName,
                         tableWildcard: {}
                     }
                 }
@@ -79,7 +84,7 @@ export class LakeFormationTagStack extends Stack {
                 permissions: ["DESCRIBE", "SELECT"],
                 permissionsWithGrantOption: ["DESCRIBE"],
                 principal: {
-                    dataLakePrincipalIdentifier: "arn:aws:iam::455595963207:user/data-scientist"
+                    dataLakePrincipalIdentifier: principalArn
                 },
                 resource: {
                     lfTagPolicy: {
@@ -100,16 +105,16 @@ export class LakeFormationTagStack extends Stack {
             "TableWithColumnsResourceSelectOnly",
             {
                 permissions: ["SELECT"],
-                permissionsWithGrantOption: ["DESCRIBE"],
+                permissionsWithGrantOption: ["SELECT"],
                 principal: {
-                    dataLakePrincipalIdentifier: "arn:aws:iam::455595963207:user/data-scientist"
+                    dataLakePrincipalIdentifier: principalArn
                 },
                 resource: {
                     tableWithColumns: {
                         catalogId: this.account,
                         databaseName: databaseName,
-                        name: "amazonreviewtable",
-                        columnNames: ["marketplace", "customer_id"],
+                        name: tableName,
+                        columnNames: columnNames,
                     }
                 }
             }

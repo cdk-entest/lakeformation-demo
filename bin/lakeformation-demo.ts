@@ -47,6 +47,7 @@ const workflow = new LFWorkFlowRoleStack(app, "LFWorkFlowRoleStack", {
 
 // lakeformation tag 
 new LakeFormationTagStack(app, "LakeFormationTagStack", {
+  principalArn: "arn:aws:iam::455595963207:user/data-scientist",
   env: {
     region: process.env.CDK_DEFAULT_REGION,
     account: process.env.CDK_DEFAULT_ACCOUNT
