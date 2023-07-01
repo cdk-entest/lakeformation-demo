@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { LakeFormationStack } from "../lib/lakeformation-stack";
 import { DataScientistStack } from "../lib/data-scientist-stack";
@@ -9,12 +8,14 @@ import {
   DataEngineerStack,
   LFWorkFlowRoleStack,
 } from "../lib/data-engineer-stack";
+import { LakeFormationTagStack } from "../lib/lakeformation-tag-stack";
 
 const app = new cdk.App();
 
 // create lakeformation
 const lake = new LakeFormationStack(app, "LakeFormationStack", {
   s3LakeName: config.s3LakeName,
+  athenaBucket: config.athenaResultBucket,
   registerBuckets: ["amazon-reviews-pds"],
 });
 
@@ -43,6 +44,15 @@ const workflow = new LFWorkFlowRoleStack(app, "LFWorkFlowRoleStack", {
   destBucketArn: `arn:aws:s3:::${config.s3LakeName}`,
   databaseName: "default",
 });
+
+// lakeformation tag 
+new LakeFormationTagStack(app, "LakeFormationTagStack", {
+  env: {
+    region: process.env.CDK_DEFAULT_REGION,
+    account: process.env.CDK_DEFAULT_ACCOUNT
+  }
+})
+
 
 ds.addDependency(lake);
 de.addDependency(lake);

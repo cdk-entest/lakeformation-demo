@@ -11,6 +11,7 @@ import { Construct } from "constructs";
 
 interface LakeFormationProps extends StackProps {
   s3LakeName: string;
+  athenaBucket: string;
   registerBuckets: string[];
 }
 
@@ -40,6 +41,13 @@ export class LakeFormationStack extends Stack {
     // create lake S3 bucket
     const bucket = new aws_s3.Bucket(this, "S3LakeBucketDemo", {
       bucketName: props.s3LakeName,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+
+    // athena query result bucket
+    const athenaBucket = new aws_s3.Bucket(this, "S3AthenaQueryResult", {
+      bucketName: props.athenaBucket,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
     });
